@@ -1,0 +1,58 @@
+<html>
+<head>
+    <title>欢迎使用MyPoxy代理服务器！</title>
+    <meta charset="UTF-8">
+    <script language="JavaScript">
+    var all = new XMLHttpRequest();
+    function getALL() {
+        all.open('GET', '/all', true);
+        all.onload = function () {
+            if (all.status == 200 && all.responseText) {
+                var lines = all.responseText.split('\n');
+                var table = document.getElementById('table1');
+                var no = document.getElementById('no');
+                
+                // 按 ID 升序排序
+                lines = lines
+                    .filter(line => line.trim() !== '')  // 过滤空行
+                    .map(line => {
+                        const fields = line.split('/');
+                        return { id: parseInt(fields[0]), line: line };
+                    })
+                    .sort((a, b) => a.id - b.id)        // 按 ID 数值排序
+                    .map(item => item.line);            // 恢复原始行数据
+
+                if (lines.length > 0) {
+                    table.innerHTML = "<thead><tr><th>ID</th><th>时间</th><th>来源IP:端口</th><th>目标IP:端口</th><th>查看</th></tr></thead><tbody>";
+                    for (let line of lines) {
+                        var fields = line.split('/');
+                        if (fields.length >= 4) {
+                            var id = fields[0];
+                            var time = fields[1];
+                            var fip = fields[2];
+                            var tip = fields[3];
+                            var link = `<a href="/getpacket.${id}.html">查看详情</a>`;
+                            table.innerHTML += `<tr><td>${id}</td><td>${time}</td><td>${fip}</td><td>${tip}</td><td>${link}</td></tr>`;
+                        }
+                    }
+                    table.innerHTML += "</tbody>";
+                    table.style.display = "table";
+                    no.style.display = "none";
+                } else {
+                    table.style.display = "none";
+                    no.style.display = "block";
+                }
+            }
+        };
+        all.send();
+        setTimeout(getALL, 1000);
+    }
+    getALL();
+</script>
+</head>
+<body>
+<h2>欢迎使用MyPoxy代理服务器！</h2><hr>
+<h5>代理捕获的流量：</h5>
+<table id="table1"></table>
+<p id="no">代理未捕获任何流量</p>
+</body>
